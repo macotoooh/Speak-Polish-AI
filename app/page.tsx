@@ -114,7 +114,10 @@ export default function Home() {
       return;
     }
 
-    const currentSelectedText = text.slice(selectionRange.start, selectionRange.end);
+    const currentSelectedText = text.slice(
+      selectionRange.start,
+      selectionRange.end,
+    );
     if (currentSelectedText.trim().length === 0) {
       setTextFeedbackError("Please select non-empty text.");
       return;
@@ -157,7 +160,9 @@ export default function Home() {
       });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to analyze selected text.";
+        error instanceof Error
+          ? error.message
+          : "Failed to analyze selected text.";
       setTextFeedbackError(message);
     } finally {
       setIsTextAnalyzing(false);
@@ -198,7 +203,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-6">
-      <h1 className="text-3xl font-bold">Speak & Improve AI 🎙️</h1>
+      <h1 className="text-3xl font-bold">Speak Polish AI 🎙️</h1>
 
       <div className="w-full max-w-md space-y-2">
         <textarea
@@ -216,7 +221,9 @@ export default function Home() {
         />
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm text-gray-600">
-            {selectedText ? `Selected: "${selectedText}"` : "Select text to analyze"}
+            {selectedText
+              ? `Selected: "${selectedText}"`
+              : "Select text to analyze"}
           </p>
           <button
             type="button"
