@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Player from "@/components/Player";
+import Recorder from "@/components/Recorder";
 
 export default function Home() {
   const [text, setText] = useState(
@@ -19,6 +20,8 @@ export default function Home() {
       />
 
       <Player text={text} />
+
+      <Recorder />
     </main>
   );
 }
