@@ -2,25 +2,33 @@
 
 I packed this app with the exact features I wished I had while learning English!
 
+Live Demo: https://speak-polish-ai.vercel.app/
+
 AI-powered English practice app with:
 
 - Pronunciation feedback from recorded audio
 - Natural `Listen` playback using OpenAI TTS (with browser voice fallback if TTS fails)
 - Grammar explanation and rewrite suggestions for selected text selection only
 
-## Screenshots
+## Product Tour
 
-### Top
+### 1. Practice Screen
+
+Write or paste a sentence, listen to natural TTS playback, and record your voice.
 
 ![Top screen](public/top.png)
 
-### Pronunciation Feedback
+### 2. Grammar Rewrite (Selected Text)
+
+Quick walkthrough of selection -> analysis -> suggestion apply.
+
+![Grammar checker demo](public/grammer-checker.gif)
+
+### 3. Pronunciation Feedback
+
+After recording, the app shows an AI score with concrete feedback for consonants, vowels, and stress.
 
 ![Pronunciation feedback](public/pronunciation-check.png)
-
-### Grammar Feedback
-
-![Grammar feedback](public/grammar-check.png)
 
 ## Setup
 
