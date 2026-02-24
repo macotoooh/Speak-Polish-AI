@@ -1,9 +1,26 @@
 # Speak Polish AI
 
+I packed this app with the exact features I wished I had while learning English!
+
 AI-powered English practice app with:
+
 - Pronunciation feedback from recorded audio
-- Natural `Listen` playback using OpenAI TTS
-- Grammar explanation and rewrite suggestions for selected text
+- Natural `Listen` playback using OpenAI TTS (with browser voice fallback if TTS fails)
+- Grammar explanation and rewrite suggestions for selected text selection only
+
+## Screenshots
+
+### Top
+
+![Top screen](public/top.png)
+
+### Pronunciation Feedback
+
+![Pronunciation feedback](public/pronunciation-check.png)
+
+### Grammar Feedback
+
+![Grammar feedback](public/grammar-check.png)
 
 ## Setup
 
@@ -38,7 +55,7 @@ Open `http://localhost:3000` in your browser.
 4. The app sends microphone audio and the target sentence to `/api/pronunciation-feedback`.
 5. Audio is analyzed directly by OpenAI for score and pronunciation comments.
 6. If direct audio analysis fails, the API falls back to transcription-based analysis.
-7. You can select text in the textarea and tap `Analyze text` to get grammar explanations and rewrite suggestions from `/api/text-feedback`.
+7. You can select text in the textarea and tap `Analyze text` to get grammar explanations and rewrite suggestions for the selected range from `/api/text-feedback`.
 8. Tap `Apply this suggestion` to replace the selected text directly.
 
 ## Notes
