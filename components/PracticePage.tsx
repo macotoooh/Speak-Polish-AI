@@ -326,7 +326,7 @@ export default function PracticePage() {
       <div className="w-full max-w-2xl space-y-2">
         <textarea
           ref={textareaRef}
-          className="w-full rounded border p-3"
+          className="ui-input w-full rounded p-3"
           value={text}
           onChange={(e) => {
             setText(e.target.value);
@@ -339,7 +339,7 @@ export default function PracticePage() {
           rows={4}
         />
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm text-gray-600">
+          <p className="ui-text-muted text-sm">
             {selectedText
               ? `Selected: "${selectedText}"`
               : "Select text to analyze"}
@@ -348,7 +348,7 @@ export default function PracticePage() {
             type="button"
             onClick={() => void analyzeSelectedText()}
             disabled={!selectionRange || isTextAnalyzing}
-            className="rounded-md bg-gray-800 px-3 py-2 text-sm text-white disabled:opacity-50"
+            className="ui-btn-secondary rounded-md px-3 py-2 text-sm disabled:opacity-50"
           >
             {isTextAnalyzing ? "Analyzing..." : "Analyze text"}
           </button>
@@ -361,21 +361,21 @@ export default function PracticePage() {
         <button
           type="button"
           onClick={saveToHistory}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-white disabled:opacity-60"
+          className="ui-btn-primary rounded-lg px-4 py-2 disabled:opacity-60"
           disabled={isSaveDisabled}
         >
           {isSaving ? "Saving..." : "Save to History"}
         </button>
       </div>
 
-      {saveMessage && <p className="text-sm text-gray-700">{saveMessage}</p>}
+      {saveMessage && <p className="ui-text-muted text-sm">{saveMessage}</p>}
 
       {(isTextAnalyzing || textFeedback || textFeedbackError) && (
-        <section className="w-full max-w-2xl rounded-lg border p-4">
+        <section className="ui-card w-full max-w-2xl rounded-lg p-4">
           <h2 className="text-lg font-semibold">Text Grammar Feedback</h2>
 
           {isTextAnalyzing && (
-            <p className="mt-2 text-gray-600">Analyzing selected text...</p>
+            <p className="ui-text-muted mt-2">Analyzing selected text...</p>
           )}
 
           {textFeedbackError && (
@@ -394,12 +394,12 @@ export default function PracticePage() {
                   {textFeedback.suggestions.map((suggestion, index) => (
                     <div
                       key={`${suggestion}-${index}`}
-                      className="space-y-2 rounded border p-2"
+                      className="ui-card space-y-2 rounded p-2"
                     >
                       <p>{suggestion}</p>
                       <button
                         type="button"
-                        className="rounded bg-blue-600 px-3 py-1 text-sm text-white"
+                        className="ui-btn-primary rounded px-3 py-1 text-sm"
                         onClick={() => applySuggestion(suggestion)}
                       >
                         Apply this suggestion
@@ -414,17 +414,17 @@ export default function PracticePage() {
       )}
 
       {spokenText && (
-        <p className="text-gray-700">
+        <p className="ui-text-muted">
           <strong>You said:</strong> {spokenText}
         </p>
       )}
 
       {(isAnalyzing || aiFeedback || feedbackError) && (
-        <section className="w-full max-w-2xl rounded-lg border p-4">
+        <section className="ui-card w-full max-w-2xl rounded-lg p-4">
           <h2 className="text-lg font-semibold">AI Pronunciation Feedback</h2>
 
           {isAnalyzing && (
-            <p className="mt-2 text-gray-600">Analyzing your speech...</p>
+            <p className="ui-text-muted mt-2">Analyzing your speech...</p>
           )}
 
           {feedbackError && <p className="mt-2 text-red-600">{feedbackError}</p>}
@@ -447,7 +447,7 @@ export default function PracticePage() {
                 <strong>Fluency Score:</strong> {aiFeedback.fluencyScore ?? "-"}
                 /100
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="ui-text-muted text-sm">
                 Score basis: AI overall score from audio analysis.
               </p>
               <p>

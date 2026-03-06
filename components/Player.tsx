@@ -113,7 +113,7 @@ export default function Player({ text }: { text: string }) {
     <button
       onClick={() => void speak()}
       disabled={isLoading}
-      className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-60"
+      className="ui-btn-primary rounded-lg px-4 py-2 disabled:opacity-60"
     >
       {isLoading ? "Generating..." : "🔊 Listen"}
     </button>

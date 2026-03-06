@@ -37,12 +37,12 @@ export default function HistoryPage() {
       <h1 className="text-3xl font-bold">History</h1>
 
       {records.length === 0 ? (
-        <p className="text-gray-600">No practice history yet.</p>
+        <p className="ui-text-muted">No practice history yet.</p>
       ) : (
         <div className="space-y-3">
           {records.map((record) => (
-            <article key={record.id} className="max-w-2xl rounded-lg border p-4">
-              <p className="text-sm text-gray-500">{formatDate(record.createdAt)}</p>
+            <article key={record.id} className="ui-card max-w-2xl rounded-lg p-4">
+              <p className="ui-text-muted text-sm">{formatDate(record.createdAt)}</p>
               <p className="mt-2">{record.sentence}</p>
               <p className="mt-2 font-medium">Score: {record.pronunciationScore}</p>
             </article>
