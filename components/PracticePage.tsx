@@ -434,6 +434,19 @@ export default function PracticePage() {
               <p>
                 <strong>AI Score:</strong> {aiFeedback.overallScore}/100
               </p>
+              <p>
+                <strong>Rhythm Score:</strong>{" "}
+                {aiFeedback.rhythmScore ?? aiFeedback.aiTimingScore ?? "-"}
+                /100
+              </p>
+              <p>
+                <strong>Segmental Score:</strong>{" "}
+                {aiFeedback.segmentalScore ?? "-"}/100
+              </p>
+              <p>
+                <strong>Fluency Score:</strong> {aiFeedback.fluencyScore ?? "-"}
+                /100
+              </p>
               <p className="text-sm text-gray-500">
                 Score basis: AI overall score from audio analysis.
               </p>
