@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f8fa;
+  --foreground: #111827;
+  --surface: #ffffff;
+  --surface-2: #eef2f7;
+  --border: #d6dde8;
+  --muted: #5b6472;
+  --primary: #0f766e;
+  --primary-contrast: #ffffff;
+  --accent: #f59e0b;
+  --accent-contrast: #1f2937;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+:root[data-theme="dark"] {
+  --background: #0b1220;
+  --foreground: #e5e7eb;
+  --surface: #131b2a;
+  --surface-2: #1b2538;
+  --border: #2b3b57;
+  --muted: #9eabc0;
+  --primary: #14b8a6;
+  --primary-contrast: #052a28;
+  --accent: #fbbf24;
+  --accent-contrast: #3a2b00;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme]) {
+    --background: #0b1220;
+    --foreground: #e5e7eb;
+    --surface: #131b2a;
+    --surface-2: #1b2538;
+    --border: #2b3b57;
+    --muted: #9eabc0;
+    --primary: #14b8a6;
+    --primary-contrast: #052a28;
+    --accent: #fbbf24;
+    --accent-contrast: #3a2b00;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+.ui-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.ui-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.ui-text-muted {
+  color: var(--muted);
+}
+
+.ui-btn-primary {
+  background: var(--primary);
+  color: var(--primary-contrast);
+}
+
+.ui-btn-secondary {
+  background: var(--surface-2);
+  color: var(--foreground);
+}
+
+.ui-btn-secondary:hover {
+  filter: brightness(0.97);
+}
+
+.ui-btn-accent {
+  background: var(--accent);
+  color: var(--accent-contrast);
 }

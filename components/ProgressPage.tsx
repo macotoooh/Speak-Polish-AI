@@ -38,7 +38,7 @@ export default function ProgressPage() {
     <main className="flex min-h-full flex-col gap-6 p-6">
       <h1 className="text-3xl font-bold">Progress</h1>
 
-      <section className="max-w-xl space-y-3 rounded-lg border p-4">
+      <section className="ui-card max-w-xl space-y-3 rounded-lg p-4">
         <p>
           <strong>Total practices:</strong> {stats.totalPractices}
         </p>

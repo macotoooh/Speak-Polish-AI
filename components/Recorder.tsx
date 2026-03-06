@@ -72,7 +72,7 @@ export default function Recorder({ onRecorded, disabled = false }: Props) {
     <button
       onClick={isRecording ? stopRecording : startRecording}
       disabled={disabled}
-      className="px-4 py-2 bg-green-500 text-white rounded-lg disabled:opacity-60"
+      className="ui-btn-accent rounded-lg px-4 py-2 disabled:opacity-60"
     >
       {isRecording ? "⏹ Stop" : "🎙 Record"}
     </button>
