@@ -7,6 +7,9 @@ export type PronunciationIssue = {
 export type PronunciationFeedback = {
   overallScore: number;
   aiTimingScore: number | null;
+  rhythmScore: number | null;
+  segmentalScore: number | null;
+  fluencyScore: number | null;
   targetMatchScore: number | null;
   englishConfidence: number | null;
   isTargetSentence: boolean;

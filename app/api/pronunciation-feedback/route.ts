@@ -29,6 +29,9 @@ type TranscriptionAttempt = {
 const fallbackFeedback: PronunciationFeedback = {
   overallScore: 0,
   aiTimingScore: null,
+  rhythmScore: null,
+  segmentalScore: null,
+  fluencyScore: null,
   targetMatchScore: null,
   englishConfidence: null,
   isTargetSentence: false,
@@ -73,7 +76,10 @@ function normalizeFeedback(
   targetText: string,
   transcribedText: string,
 ): PronunciationFeedback {
-  const aiTimingScore = normalizeAiTimingScore(input.aiTimingScore);
+  const rhythmScore = normalizePercentScore(input.rhythmScore);
+  const segmentalScore = normalizePercentScore(input.segmentalScore);
+  const fluencyScore = normalizePercentScore(input.fluencyScore);
+  const aiTimingScore = normalizeAiTimingScore(input.aiTimingScore ?? rhythmScore);
   const aiOverallScore = normalizeOverallScore(input.overallScore);
   const targetMatchScore = normalizePercentScore(input.targetMatchScore);
   const englishConfidence = normalizePercentScore(input.englishConfidence);
@@ -90,7 +96,17 @@ function normalizeFeedback(
     isTargetSentence && (englishConfidence === null || englishConfidence >= 50)
       ? scoreWithMatchCap
       : Math.min(scoreWithMatchCap, 20);
-  const score = Math.max(0, Math.min(100, Math.round(scoreWithGuard)));
+  const scoreWithTimingCap =
+    aiTimingScore === null
+      ? scoreWithGuard
+      : aiTimingScore < 40
+        ? Math.min(scoreWithGuard, 50)
+        : aiTimingScore < 60
+          ? Math.min(scoreWithGuard, 70)
+          : aiTimingScore < 75
+            ? Math.min(scoreWithGuard, 85)
+            : scoreWithGuard;
+  const score = Math.max(0, Math.min(100, Math.round(scoreWithTimingCap)));
 
   const issues = Array.isArray(input.pronunciationIssues)
     ? input.pronunciationIssues
@@ -111,6 +127,9 @@ function normalizeFeedback(
   return {
     overallScore: score,
     aiTimingScore,
+    rhythmScore: rhythmScore ?? aiTimingScore,
+    segmentalScore,
+    fluencyScore,
     targetMatchScore,
     englishConfidence,
     isTargetSentence,
@@ -223,7 +242,7 @@ async function generateFeedback(
         : "webm";
 
   const systemPrompt =
-    "You are an English pronunciation coach. Analyze pronunciation directly from the provided audio against the target sentence. Always return valid JSON and provide distinct comments for consonants, vowels, and stress. Never give high scores to unrelated or non-English speech.";
+    "You are a strict English pronunciation coach. Analyze pronunciation directly from the provided audio against the target sentence. Penalize unnatural rhythm, misplaced stress, monotone delivery, wrong chunking, and disruptive pauses. Always return valid JSON and provide distinct comments for consonants, vowels, and stress. Never give high scores to unrelated or non-English speech.";
   const userPrompt = `
 Target sentence:
 ${targetText}
@@ -234,11 +253,20 @@ Strict scoring rules:
 - If the utterance is not the target sentence, set isTargetSentence=false and overallScore <= 20.
 - If speech is non-English or gibberish, set englishConfidence < 50 and overallScore <= 20.
 - Do not return 100 unless target sentence match and pronunciation quality are both excellent.
+- Rhythm and timing must be scored strictly (natural stress-timed English flow, pause placement, tempo consistency, chunking).
+- If rhythm is clearly unnatural, keep aiTimingScore below 60 and do not give a high overallScore.
+- If aiTimingScore < 40, overallScore must be <= 50.
+- If aiTimingScore < 60, overallScore must be <= 70.
+- If aiTimingScore < 75, overallScore must be <= 85.
+- Score rhythmScore, segmentalScore, and fluencyScore independently and consistently with comments.
 
 Return strict JSON with this schema:
 {
   "overallScore": number, // 0-100 final pronunciation score
   "aiTimingScore": number, // 0-100 from timing/rhythm only (pauses, tempo, flow)
+  "rhythmScore": number, // 0-100 rhythm/stress-timed flow quality
+  "segmentalScore": number, // 0-100 consonant/vowel sound accuracy
+  "fluencyScore": number, // 0-100 smoothness (hesitations, repairs, unnatural pauses)
   "targetMatchScore": number, // 0-100 semantic/content match to target sentence
   "englishConfidence": number, // 0-100 confidence that utterance is meaningful English
   "isTargetSentence": boolean,
@@ -299,7 +327,7 @@ async function generateFeedbackFromTranscript(
   apiKey: string,
 ) {
   const systemPrompt =
-    "You are an English pronunciation coach. Analyze likely pronunciation issues using transcript differences and word timings. Always provide distinct comments for consonants, vowels, and stress. Never give high scores to unrelated or non-English speech.";
+    "You are a strict English pronunciation coach. Analyze likely pronunciation issues using transcript differences and word timings. Penalize unnatural rhythm, misplaced stress, monotone delivery, wrong chunking, and disruptive pauses. Always provide distinct comments for consonants, vowels, and stress. Never give high scores to unrelated or non-English speech.";
   const userPrompt = `
 Target sentence:
 ${targetText}
@@ -314,11 +342,20 @@ Strict scoring rules:
 - If the utterance is not the target sentence, set isTargetSentence=false and overallScore <= 20.
 - If speech is non-English or gibberish, set englishConfidence < 50 and overallScore <= 20.
 - Do not return 100 unless target sentence match and pronunciation quality are both excellent.
+- Rhythm and timing must be scored strictly (natural stress-timed English flow, pause placement, tempo consistency, chunking).
+- If rhythm is clearly unnatural, keep aiTimingScore below 60 and do not give a high overallScore.
+- If aiTimingScore < 40, overallScore must be <= 50.
+- If aiTimingScore < 60, overallScore must be <= 70.
+- If aiTimingScore < 75, overallScore must be <= 85.
+- Score rhythmScore, segmentalScore, and fluencyScore independently and consistently with comments.
 
 Return strict JSON with this schema:
 {
   "overallScore": number, // 0-100 final pronunciation score
   "aiTimingScore": number, // 0-100 from timing/rhythm only (pauses, tempo, flow)
+  "rhythmScore": number, // 0-100 rhythm/stress-timed flow quality
+  "segmentalScore": number, // 0-100 consonant/vowel sound accuracy
+  "fluencyScore": number, // 0-100 smoothness (hesitations, repairs, unnatural pauses)
   "targetMatchScore": number, // 0-100 semantic/content match to target sentence
   "englishConfidence": number, // 0-100 confidence that utterance is meaningful English
   "isTargetSentence": boolean,
