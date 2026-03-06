@@ -21,8 +21,7 @@ const buildFingerprint = (record: {
   sentence: string;
   correction: string;
   pronunciationScore: number;
-}) =>
-  `${record.sentence}::${record.correction}::${record.pronunciationScore}`;
+}) => `${record.sentence}::${record.correction}::${record.pronunciationScore}`;
 
 const loadLatestFingerprint = () => {
   if (typeof window === "undefined") {
@@ -70,8 +69,9 @@ export default function PracticePage() {
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [lastSavedFingerprint, setLastSavedFingerprint] =
-    useState<string | null>(loadLatestFingerprint);
+  const [lastSavedFingerprint, setLastSavedFingerprint] = useState<
+    string | null
+  >(loadLatestFingerprint);
   const isSavingRef = useRef(false);
 
   const analyzePronunciationFromAudio = async (
@@ -320,8 +320,8 @@ export default function PracticePage() {
     !aiFeedback || isSaving || currentFingerprint === lastSavedFingerprint;
 
   return (
-    <main className="flex min-h-full flex-col gap-6 p-6">
-      <h1 className="text-3xl font-bold">Practice</h1>
+    <main className="flex min-h-full flex-col gap-6 wrap-break-word p-4 sm:p-6">
+      <h1 className="text-2xl font-bold sm:text-3xl">Practice</h1>
 
       <div className="w-full max-w-2xl space-y-2">
         <textarea
@@ -338,8 +338,8 @@ export default function PracticePage() {
           name="targetText"
           rows={4}
         />
-        <div className="flex items-center justify-between gap-2">
-          <p className="ui-text-muted text-sm">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="ui-text-muted line-clamp-2 text-sm">
             {selectedText
               ? `Selected: "${selectedText}"`
               : "Select text to analyze"}
@@ -348,20 +348,20 @@ export default function PracticePage() {
             type="button"
             onClick={() => void analyzeSelectedText()}
             disabled={!selectionRange || isTextAnalyzing}
-            className="ui-btn-secondary rounded-md px-3 py-2 text-sm disabled:opacity-50"
+            className="ui-btn-secondary w-full rounded-md px-3 py-2 text-sm disabled:opacity-50 sm:w-auto"
           >
             {isTextAnalyzing ? "Analyzing..." : "Analyze text"}
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="grid w-full max-w-2xl grid-cols-1 gap-3 sm:flex sm:flex-wrap">
         <Player text={text} />
         <Recorder onRecorded={handleRecordedAudio} disabled={isAnalyzing} />
         <button
           type="button"
           onClick={saveToHistory}
-          className="ui-btn-primary rounded-lg px-4 py-2 disabled:opacity-60"
+          className="ui-btn-primary w-full rounded-lg px-4 py-2 disabled:opacity-60 sm:w-auto"
           disabled={isSaveDisabled}
         >
           {isSaving ? "Saving..." : "Save to History"}
@@ -427,7 +427,9 @@ export default function PracticePage() {
             <p className="ui-text-muted mt-2">Analyzing your speech...</p>
           )}
 
-          {feedbackError && <p className="mt-2 text-red-600">{feedbackError}</p>}
+          {feedbackError && (
+            <p className="mt-2 text-red-600">{feedbackError}</p>
+          )}
 
           {aiFeedback && (
             <div className="mt-3 space-y-3">
