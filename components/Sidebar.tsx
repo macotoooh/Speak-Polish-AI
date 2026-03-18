@@ -32,7 +32,9 @@ export default function Sidebar() {
     <>
       <aside className="w-full border-b border-border bg-surface p-4 md:min-h-screen md:w-64 md:border-b-0 md:border-r">
         <div className="flex items-center justify-between md:block">
-          <h1 className="text-lg font-bold sm:text-xl md:mb-4">Speak Polish AI</h1>
+          <h1 className="text-lg font-bold sm:text-xl md:mb-4">
+            Speak Coach AI
+          </h1>
           <button
             type="button"
             aria-label="Open menu"

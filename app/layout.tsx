@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Speak Polish AI ",
+  title: "Speak Coach AI",
   description:
     "AI-powered English coach for pronunciation feedback, natural TTS, and grammar rewrites.",
 };
