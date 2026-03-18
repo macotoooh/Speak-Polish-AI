@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme } from "@/components/ThemeProvider";
+import Button, { BUTTON_SIZES, BUTTON_VARIANTS } from "@/components/ui/Button";
 
 export default function ThemeToggle() {
   const { mode, setMode } = useTheme();
@@ -9,33 +10,39 @@ export default function ThemeToggle() {
     <div className="mt-5 space-y-2">
       <p className="text-sm ui-text-muted">Theme</p>
       <div className="grid grid-cols-3 gap-2">
-        <button
-          type="button"
+        <Button
           onClick={() => setMode("light")}
-          className={`rounded-md px-3 py-2 text-sm ${
-            mode === "light" ? "ui-btn-primary" : "ui-btn-secondary"
-          }`}
+          variant={
+            mode === "light"
+              ? BUTTON_VARIANTS.primary
+              : BUTTON_VARIANTS.secondary
+          }
+          size={BUTTON_SIZES.md}
         >
           Light
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={() => setMode("dark")}
-          className={`rounded-md px-3 py-2 text-sm ${
-            mode === "dark" ? "ui-btn-primary" : "ui-btn-secondary"
-          }`}
+          variant={
+            mode === "dark"
+              ? BUTTON_VARIANTS.primary
+              : BUTTON_VARIANTS.secondary
+          }
+          size={BUTTON_SIZES.md}
         >
           Dark
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={() => setMode("system")}
-          className={`rounded-md px-3 py-2 text-sm ${
-            mode === "system" ? "ui-btn-primary" : "ui-btn-secondary"
-          }`}
+          variant={
+            mode === "system"
+              ? BUTTON_VARIANTS.primary
+              : BUTTON_VARIANTS.secondary
+          }
+          size={BUTTON_SIZES.md}
         >
           System
-        </button>
+        </Button>
       </div>
     </div>
   );

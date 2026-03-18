@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Button, { BUTTON_SIZES, BUTTON_VARIANTS } from "@/components/ui/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faVolumeHigh } from "@fortawesome/free-solid-svg-icons";
 
@@ -163,13 +164,16 @@ export default function Player({ text, selectedText = "" }: PlayerProps) {
   const hasSelectedText = selectedText.trim().length > 0;
 
   return (
-    <button
+    <Button
       onMouseDown={(event) => {
         event.preventDefault();
       }}
       onClick={() => void speak()}
       disabled={isLoading}
-      className="ui-btn-primary inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-60 sm:w-auto"
+      variant={BUTTON_VARIANTS.primary}
+      size={BUTTON_SIZES.lg}
+      fullWidth
+      className="sm:w-auto"
     >
       {isLoading ? (
         "Generating..."
@@ -179,6 +183,6 @@ export default function Player({ text, selectedText = "" }: PlayerProps) {
           <span>{hasSelectedText ? "Listen Selection" : "Listen"}</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }
