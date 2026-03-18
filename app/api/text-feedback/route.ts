@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import {
+  getFeedbackLanguageLabel,
+  normalizeFeedbackLanguage,
+  type FeedbackLanguage,
+} from "@/lib/feedback-language";
 import type { TextFeedbackResponse } from "@/types/text-feedback";
 
 type ChatCompletionsResponse = {
@@ -12,6 +17,7 @@ type ChatCompletionsResponse = {
 type TextFeedbackRequest = {
   fullText?: string;
   selectedText?: string;
+  feedbackLanguage?: string;
 };
 
 function stripCodeFence(text: string): string {
@@ -21,11 +27,14 @@ function stripCodeFence(text: string): string {
 function normalizeTextFeedback(
   input: Partial<TextFeedbackResponse>,
   selectedText: string,
+  feedbackLanguage: FeedbackLanguage,
 ): TextFeedbackResponse {
   const explanation =
     typeof input.explanation === "string" && input.explanation.trim().length > 0
       ? input.explanation.trim()
-      : "No explanation available.";
+      : feedbackLanguage === "ja"
+        ? "説明を生成できませんでした。"
+        : "No explanation available.";
 
   const suggestions = Array.isArray(input.suggestions)
     ? input.suggestions
@@ -56,6 +65,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as TextFeedbackRequest;
     const fullText = String(body.fullText ?? "").trim();
     const selectedText = String(body.selectedText ?? "").trim();
+    const feedbackLanguage = normalizeFeedbackLanguage(body.feedbackLanguage);
 
     if (!selectedText) {
       return NextResponse.json(
@@ -64,8 +74,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const systemPrompt =
-      "You are an English writing coach. Explain grammar and wording clearly and concisely.";
+    const feedbackLanguageLabel = getFeedbackLanguageLabel(feedbackLanguage);
+    const systemPrompt = `You are an English writing coach. Explain grammar and wording clearly and concisely in ${feedbackLanguageLabel}.`;
     const userPrompt = `
 Full text:
 ${fullText}
@@ -75,12 +85,13 @@ ${selectedText}
 
 Return strict JSON with this schema:
 {
-  "explanation": string, // grammar and phrasing explanation in simple English
-  "suggestions": string[] // up to 3 improved rewrites of selected text
+  "explanation": string, // grammar and phrasing explanation in ${feedbackLanguageLabel}
+  "suggestions": string[] // up to 3 improved rewrites of selected text in natural English
 }
 Rules:
+- Write explanation in ${feedbackLanguageLabel}.
 - Keep suggestions faithful to the original meaning.
-- Prefer natural spoken English.
+- Write suggestions in natural spoken English.
 - Do not include markdown or extra keys.
 `.trim();
 
@@ -111,12 +122,16 @@ Rules:
 
     if (!content) {
       return NextResponse.json(
-        normalizeTextFeedback({}, selectedText),
+        normalizeTextFeedback({}, selectedText, feedbackLanguage),
       );
     }
 
-    const parsed = JSON.parse(stripCodeFence(content)) as Partial<TextFeedbackResponse>;
-    return NextResponse.json(normalizeTextFeedback(parsed, selectedText));
+    const parsed = JSON.parse(
+      stripCodeFence(content),
+    ) as Partial<TextFeedbackResponse>;
+    return NextResponse.json(
+      normalizeTextFeedback(parsed, selectedText, feedbackLanguage),
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
