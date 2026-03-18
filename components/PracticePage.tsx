@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFireFlameCurved,
-  faStar,
-} from "@fortawesome/free-solid-svg-icons";
+import { faFireFlameCurved, faStar } from "@fortawesome/free-solid-svg-icons";
 import Player from "@/components/Player";
 import Recorder from "@/components/Recorder";
+import {
+  DEFAULT_FEEDBACK_LANGUAGE,
+  readFeedbackLanguage,
+  type FeedbackLanguage,
+} from "@/lib/feedback-language";
 import type { PronunciationFeedback } from "@/types/pronunciation";
 import type { TextFeedbackResponse } from "@/types/text-feedback";
 import type { PracticeRecord } from "@/types/PracticeRecord";
@@ -169,6 +171,9 @@ export default function PracticePage() {
   >(null);
   const [learningStats, setLearningStats] =
     useState<LearningStats>(EMPTY_LEARNING_STATS);
+  const [feedbackLanguage, setFeedbackLanguage] = useState<FeedbackLanguage>(
+    DEFAULT_FEEDBACK_LANGUAGE,
+  );
   const [showNinetyCelebration, setShowNinetyCelebration] = useState(false);
   const isSavingRef = useRef(false);
 
@@ -176,6 +181,7 @@ export default function PracticePage() {
     const history = loadHistory();
     setLearningStats(calculateLearningStats(history));
     setLastSavedFingerprint(loadLatestFingerprint());
+    setFeedbackLanguage(readFeedbackLanguage());
   }, []);
 
   useEffect(() => {
@@ -204,6 +210,7 @@ export default function PracticePage() {
       const formData = new FormData();
       formData.append("targetText", targetText);
       formData.append("audio", audioBlob, "recording.webm");
+      formData.append("feedbackLanguage", feedbackLanguage);
 
       const response = await fetch("/api/pronunciation-feedback", {
         method: "POST",
@@ -294,6 +301,7 @@ export default function PracticePage() {
         body: JSON.stringify({
           fullText: text,
           selectedText: currentSelectedText,
+          feedbackLanguage,
         }),
       });
 

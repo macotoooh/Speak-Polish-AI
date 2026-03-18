@@ -1,3 +1,4 @@
+import FeedbackLanguageSelect from "@/components/FeedbackLanguageSelect";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function SettingsPage() {
@@ -11,6 +12,15 @@ export default function SettingsPage() {
           Choose how the app looks.
         </p>
         <ThemeToggle />
+      </section>
+
+      <section className="ui-card w-full max-w-xl rounded-lg p-4">
+        <h2 className="text-lg font-semibold">Feedback Language</h2>
+        <p className="ui-text-muted mt-1 text-sm">
+          Choose which language the app uses for explanations and coaching
+          comments.
+        </p>
+        <FeedbackLanguageSelect />
       </section>
     </main>
   );

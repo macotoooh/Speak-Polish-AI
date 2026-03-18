@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import {
+  getFeedbackLanguageLabel,
+  normalizeFeedbackLanguage,
+  type FeedbackLanguage,
+} from "@/lib/feedback-language";
 import type { PronunciationFeedback } from "@/types/pronunciation";
 
 type ChatCompletionsResponse = {
@@ -46,6 +51,26 @@ const fallbackFeedback: PronunciationFeedback = {
   analysisMode: "audio_transcription_timing",
 };
 
+function getLocalizedFallbackCopy(feedbackLanguage: FeedbackLanguage) {
+  if (feedbackLanguage === "ja") {
+    return {
+      summary: "フィードバックを生成できませんでした。",
+      consonantComment: "子音に関する分析はありません。",
+      vowelComment: "母音に関する分析はありません。",
+      stressComment: "ストレスに関する分析はありません。",
+      unclearSpeech: "音声をはっきり検出できませんでした。もう一度お試しください。",
+    };
+  }
+
+  return {
+    summary: "Feedback is not available.",
+    consonantComment: "No consonant-specific feedback.",
+    vowelComment: "No vowel-specific feedback.",
+    stressComment: "No stress-specific feedback.",
+    unclearSpeech: "Speech was not detected clearly. Please try again.",
+  };
+}
+
 function stripCodeFence(text: string): string {
   return text
     .replace(/^```json\s*/i, "")
@@ -75,7 +100,9 @@ function normalizeFeedback(
   input: Partial<PronunciationFeedback>,
   targetText: string,
   transcribedText: string,
+  feedbackLanguage: FeedbackLanguage,
 ): PronunciationFeedback {
+  const fallbackCopy = getLocalizedFallbackCopy(feedbackLanguage);
   const rhythmScore = normalizePercentScore(input.rhythmScore);
   const segmentalScore = normalizePercentScore(input.segmentalScore);
   const fluencyScore = normalizePercentScore(input.fluencyScore);
@@ -136,22 +163,22 @@ function normalizeFeedback(
     summary:
       typeof input.summary === "string" && input.summary.trim().length > 0
         ? input.summary.trim()
-        : "Feedback is not available.",
+        : fallbackCopy.summary,
     consonantComment:
       typeof input.consonantComment === "string" &&
       input.consonantComment.trim().length > 0
         ? input.consonantComment.trim()
-        : "No consonant-specific feedback.",
+        : fallbackCopy.consonantComment,
     vowelComment:
       typeof input.vowelComment === "string" &&
       input.vowelComment.trim().length > 0
         ? input.vowelComment.trim()
-        : "No vowel-specific feedback.",
+        : fallbackCopy.vowelComment,
     stressComment:
       typeof input.stressComment === "string" &&
       input.stressComment.trim().length > 0
         ? input.stressComment.trim()
-        : "No stress-specific feedback.",
+        : fallbackCopy.stressComment,
     pronunciationIssues: issues,
     practiceTips: tips,
     targetText,
@@ -229,6 +256,7 @@ async function generateFeedback(
   targetText: string,
   audioFile: File,
   apiKey: string,
+  feedbackLanguage: FeedbackLanguage,
 ) {
   const audioBuffer = Buffer.from(await audioFile.arrayBuffer());
   const audioBase64 = audioBuffer.toString("base64");
@@ -241,8 +269,8 @@ async function generateFeedback(
         ? "m4a"
         : "webm";
 
-  const systemPrompt =
-    "You are a strict English pronunciation coach. Analyze pronunciation directly from the provided audio against the target sentence. Penalize unnatural rhythm, misplaced stress, monotone delivery, wrong chunking, and disruptive pauses. Always return valid JSON and provide distinct comments for consonants, vowels, and stress. Never give high scores to unrelated or non-English speech.";
+  const feedbackLanguageLabel = getFeedbackLanguageLabel(feedbackLanguage);
+  const systemPrompt = `You are a strict English pronunciation coach. Analyze pronunciation directly from the provided audio against the target sentence. Penalize unnatural rhythm, misplaced stress, monotone delivery, wrong chunking, and disruptive pauses. Always return valid JSON and provide distinct comments for consonants, vowels, and stress. Never give high scores to unrelated or non-English speech. Write all coaching explanations in ${feedbackLanguageLabel}.`;
   const userPrompt = `
 Target sentence:
 ${targetText}
@@ -271,15 +299,18 @@ Return strict JSON with this schema:
   "englishConfidence": number, // 0-100 confidence that utterance is meaningful English
   "isTargetSentence": boolean,
   "transcribedText": string,
-  "summary": string,
-  "consonantComment": string,
-  "vowelComment": string,
-  "stressComment": string,
+  "summary": string, // in ${feedbackLanguageLabel}
+  "consonantComment": string, // in ${feedbackLanguageLabel}
+  "vowelComment": string, // in ${feedbackLanguageLabel}
+  "stressComment": string, // in ${feedbackLanguageLabel}
   "pronunciationIssues": [
-    { "expected": string, "heard": string, "advice": string }
+    { "expected": string, "heard": string, "advice": string } // advice in ${feedbackLanguageLabel}
   ],
-  "practiceTips": string[]
+  "practiceTips": string[] // in ${feedbackLanguageLabel}
 }
+Rules for wording:
+- Write summary, comments, advice, and practice tips in ${feedbackLanguageLabel}.
+- Keep "transcribedText", "expected", and "heard" in English when possible.
 `.trim();
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -325,9 +356,10 @@ async function generateFeedbackFromTranscript(
   transcribedText: string,
   words: TranscriptionWord[],
   apiKey: string,
+  feedbackLanguage: FeedbackLanguage,
 ) {
-  const systemPrompt =
-    "You are a strict English pronunciation coach. Analyze likely pronunciation issues using transcript differences and word timings. Penalize unnatural rhythm, misplaced stress, monotone delivery, wrong chunking, and disruptive pauses. Always provide distinct comments for consonants, vowels, and stress. Never give high scores to unrelated or non-English speech.";
+  const feedbackLanguageLabel = getFeedbackLanguageLabel(feedbackLanguage);
+  const systemPrompt = `You are a strict English pronunciation coach. Analyze likely pronunciation issues using transcript differences and word timings. Penalize unnatural rhythm, misplaced stress, monotone delivery, wrong chunking, and disruptive pauses. Always provide distinct comments for consonants, vowels, and stress. Never give high scores to unrelated or non-English speech. Write all coaching explanations in ${feedbackLanguageLabel}.`;
   const userPrompt = `
 Target sentence:
 ${targetText}
@@ -360,15 +392,18 @@ Return strict JSON with this schema:
   "englishConfidence": number, // 0-100 confidence that utterance is meaningful English
   "isTargetSentence": boolean,
   "transcribedText": string,
-  "summary": string,
-  "consonantComment": string,
-  "vowelComment": string,
-  "stressComment": string,
+  "summary": string, // in ${feedbackLanguageLabel}
+  "consonantComment": string, // in ${feedbackLanguageLabel}
+  "vowelComment": string, // in ${feedbackLanguageLabel}
+  "stressComment": string, // in ${feedbackLanguageLabel}
   "pronunciationIssues": [
-    { "expected": string, "heard": string, "advice": string }
+    { "expected": string, "heard": string, "advice": string } // advice in ${feedbackLanguageLabel}
   ],
-  "practiceTips": string[]
+  "practiceTips": string[] // in ${feedbackLanguageLabel}
 }
+Rules for wording:
+- Write summary, comments, advice, and practice tips in ${feedbackLanguageLabel}.
+- Keep "transcribedText", "expected", and "heard" in English when possible.
 `.trim();
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -420,6 +455,10 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const targetText = String(formData.get("targetText") ?? "").trim();
     const audio = formData.get("audio");
+    const feedbackLanguage = normalizeFeedbackLanguage(
+      String(formData.get("feedbackLanguage") ?? ""),
+    );
+    const fallbackCopy = getLocalizedFallbackCopy(feedbackLanguage);
 
     if (!targetText) {
       return NextResponse.json(
@@ -443,19 +482,25 @@ export async function POST(request: Request) {
       return NextResponse.json({
         ...fallbackFeedback,
         targetText,
-        summary: "Speech was not detected clearly. Please try again.",
+        summary: fallbackCopy.unclearSpeech,
       });
     }
 
     const content = await (async () => {
       try {
-        return await generateFeedback(targetText, audio, apiKey);
+        return await generateFeedback(
+          targetText,
+          audio,
+          apiKey,
+          feedbackLanguage,
+        );
       } catch {
         return await generateFeedbackFromTranscript(
           targetText,
           fallbackTranscribedText,
           words,
           apiKey,
+          feedbackLanguage,
         );
       }
     })();
@@ -465,6 +510,10 @@ export async function POST(request: Request) {
         ...fallbackFeedback,
         targetText,
         transcribedText: fallbackTranscribedText,
+        summary: fallbackCopy.summary,
+        consonantComment: fallbackCopy.consonantComment,
+        vowelComment: fallbackCopy.vowelComment,
+        stressComment: fallbackCopy.stressComment,
       });
     }
 
@@ -478,7 +527,12 @@ export async function POST(request: Request) {
         : fallbackTranscribedText;
 
     return NextResponse.json(
-      normalizeFeedback(parsed, targetText, transcribedText),
+      normalizeFeedback(
+        parsed,
+        targetText,
+        transcribedText,
+        feedbackLanguage,
+      ),
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
