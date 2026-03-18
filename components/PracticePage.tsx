@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import DifficultySelect from "@/components/DifficultySelect";
+import Button, { BUTTON_SIZES, BUTTON_VARIANTS } from "@/components/ui/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFireFlameCurved, faStar } from "@fortawesome/free-solid-svg-icons";
 import Player from "@/components/Player";
@@ -577,11 +578,13 @@ export default function PracticePage() {
                 difficulty.
               </p>
               <div className="flex gap-2">
-                <button
-                  type="button"
+                <Button
                   onClick={() => void generateExampleSentence()}
                   disabled={isGeneratingSentence}
-                  className="ui-btn-primary w-full rounded-md px-4 py-2 text-sm disabled:opacity-50 sm:w-auto"
+                  variant={BUTTON_VARIANTS.primary}
+                  size={BUTTON_SIZES.md}
+                  fullWidth
+                  className="sm:w-auto"
                 >
                   {text.trim()
                     ? isGeneratingSentence
@@ -590,7 +593,7 @@ export default function PracticePage() {
                     : isGeneratingSentence
                       ? "Generating..."
                       : "Generate sentence"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -620,28 +623,32 @@ export default function PracticePage() {
               ? `Selected: "${selectedText}"`
               : "Select text to analyze or listen"}
           </p>
-          <button
-            type="button"
+          <Button
             onClick={() => void analyzeSelectedText()}
             disabled={!selectionRange || isTextAnalyzing}
-            className="ui-btn-secondary w-full rounded-md px-3 py-2 text-sm disabled:opacity-50 sm:w-auto"
+            variant={BUTTON_VARIANTS.secondary}
+            size={BUTTON_SIZES.md}
+            fullWidth
+            className="sm:w-auto"
           >
             {isTextAnalyzing ? "Analyzing..." : "Analyze text"}
-          </button>
+          </Button>
         </div>
       </div>
 
       <div className="grid w-full max-w-2xl grid-cols-1 gap-3 sm:flex sm:flex-wrap">
         <Player text={text} selectedText={selectedText} />
         <Recorder onRecorded={handleRecordedAudio} disabled={isAnalyzing} />
-        <button
-          type="button"
+        <Button
           onClick={saveToHistory}
-          className="ui-btn-primary w-full rounded-lg px-4 py-2 disabled:opacity-60 sm:w-auto"
+          variant={BUTTON_VARIANTS.primary}
+          size={BUTTON_SIZES.lg}
+          fullWidth
+          className="sm:w-auto"
           disabled={isSaveDisabled}
         >
           {isSaving ? "Saving..." : "Save to History"}
-        </button>
+        </Button>
       </div>
 
       {saveMessage && (
@@ -687,13 +694,13 @@ export default function PracticePage() {
                       className="ui-card space-y-2 rounded p-2"
                     >
                       <p>{suggestion}</p>
-                      <button
-                        type="button"
-                        className="ui-btn-primary rounded px-3 py-1 text-sm"
+                      <Button
+                        variant={BUTTON_VARIANTS.primary}
+                        size={BUTTON_SIZES.sm}
                         onClick={() => applySuggestion(suggestion)}
                       >
                         Apply this suggestion
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>

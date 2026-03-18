@@ -20,6 +20,7 @@ It combines speech input, AI analysis, and progress tracking into a simple daily
 - TypeScript
 - OpenAI API (TTS, transcription, feedback)
 - Tailwind CSS
+- Storybook
 - Vercel (deployment)
 
 ## Why This Product
@@ -176,13 +177,6 @@ Open `http://localhost:3000` in your browser.
 
 - Grammar explanations for selected text
 - Rewrite suggestions
-
-## Future Improvements
-
-- Multi-language support for feedback (currently English only)
-- AI-generated example sentences based on user-selected difficulty levels
-- More detailed pronunciation feedback (phoneme-level analysis)
-- User accounts for cross-device progress tracking
 
 ## Takeaways
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Button, { BUTTON_SIZES, BUTTON_VARIANTS } from "@/components/ui/Button";
 import {
   DEFAULT_FEEDBACK_LANGUAGE,
   FEEDBACK_LANGUAGE_EVENT,
@@ -31,16 +32,18 @@ export default function FeedbackLanguageSelect() {
       <p className="text-sm ui-text-muted">Feedback language</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {FEEDBACK_LANGUAGE_OPTIONS.map((option) => (
-          <button
+          <Button
             key={option.value}
-            type="button"
             onClick={() => handleChange(option.value)}
-            className={`rounded-md px-3 py-2 text-sm ${
-              language === option.value ? "ui-btn-primary" : "ui-btn-secondary"
-            }`}
+            variant={
+              language === option.value
+                ? BUTTON_VARIANTS.primary
+                : BUTTON_VARIANTS.secondary
+            }
+            size={BUTTON_SIZES.md}
           >
             {option.label}
-          </button>
+          </Button>
         ))}
       </div>
       <p className="ui-text-muted text-xs">

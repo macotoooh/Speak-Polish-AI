@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Button, { BUTTON_SIZES, BUTTON_VARIANTS } from "@/components/ui/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faStop } from "@fortawesome/free-solid-svg-icons";
 
@@ -71,10 +72,13 @@ export default function Recorder({ onRecorded, disabled = false }: Props) {
   };
 
   return (
-    <button
+    <Button
       onClick={isRecording ? stopRecording : startRecording}
       disabled={disabled}
-      className="ui-btn-accent inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-60 sm:w-auto"
+      variant={BUTTON_VARIANTS.accent}
+      size={BUTTON_SIZES.lg}
+      fullWidth
+      className="sm:w-auto"
     >
       {isRecording ? (
         <>
@@ -87,6 +91,6 @@ export default function Recorder({ onRecorded, disabled = false }: Props) {
           <span>Record</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Button, { BUTTON_SIZES, BUTTON_VARIANTS } from "@/components/ui/Button";
 import {
   EXAMPLE_SENTENCE_LEVELS,
   type ExampleSentenceLevel,
@@ -21,20 +22,21 @@ export default function DifficultySelect({
       <p className="text-sm ui-text-muted">Sentence difficulty</p>
       <div className="grid grid-cols-3 gap-2 rounded-lg bg-surface-2 p-1">
         {EXAMPLE_SENTENCE_LEVELS.map((option) => (
-          <button
+          <Button
             key={option.value}
-            type="button"
             onClick={() => onChange(option.value)}
             disabled={disabled}
             aria-pressed={value === option.value}
-            className={`rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
+            variant={
               value === option.value
-                ? "bg-primary text-background shadow-sm"
-                : "bg-transparent text-foreground hover:bg-background/60"
-            }`}
+                ? BUTTON_VARIANTS.primary
+                : BUTTON_VARIANTS.secondary
+            }
+            size={BUTTON_SIZES.md}
+            className="w-full"
           >
             {option.label}
-          </button>
+          </Button>
         ))}
       </div>
     </div>
