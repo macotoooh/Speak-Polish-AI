@@ -1,16 +1,46 @@
-# Speak Polish AI
+# Speak Coach AI
 
-I packed this app with the exact features I wished I had while learning English!
+🔗 Live Demo: https://speak-polish-ai.vercel.app/
 
-Live Demo: https://speak-polish-ai.vercel.app/
+AI-powered pronunciation training app that helps non-native speakers improve their speaking skills through real-time feedback.
 
-AI-powered English practice app with:
+As a non-native English speaker, I struggled to get clear, actionable feedback on my pronunciation — so I built a tool that combines speech input, AI analysis, and instant feedback into a simple daily practice experience.
 
-- Pronunciation feedback from recorded audio
-- Natural `Listen` playback using OpenAI TTS (with browser voice fallback if TTS fails)
-- Grammar explanation and rewrite suggestions for selected text only
-- Mobile-friendly dashboard navigation (hamburger + slide menu)
-- Learning motivation UX: streak, level bar, and 90+ score celebration
+This project focuses on delivering a smooth user experience for a complex AI-driven interaction.
+
+## Overview
+
+Speak Coach AI is a pronunciation training app focused on helping non-native speakers practice speaking with immediate AI feedback.
+
+It combines speech input, AI analysis, and progress tracking into a simple daily learning experience.
+
+## Tech Stack
+
+- React / Next.js
+- TypeScript
+- OpenAI API (TTS, transcription, feedback)
+- Tailwind CSS
+- Vercel (deployment)
+
+## Why This Product
+
+Many language learners lack immediate feedback when practicing speaking.
+
+This app focuses on:
+
+- Real-time pronunciation feedback
+- Repeatable daily practice
+- Motivation through progress tracking
+
+The goal is to make speaking practice more accessible and consistent.
+
+## User Flow
+
+1. User enters or pastes a sentence
+2. Listens to native-like pronunciation via TTS
+3. Records their own voice
+4. Receives AI-generated pronunciation feedback and score
+5. Saves results and tracks progress over time
 
 ## Product Tour
 
@@ -51,6 +81,16 @@ Adjust your app environment and learning workflow.
 - Access theme and UI preferences.
 - Manage practice-related options from one page.
 - Keep your setup consistent across sessions.
+
+## Frontend Engineering Focus
+
+This project emphasizes frontend-driven product development:
+
+- Designing a clear user journey from input → feedback → progress tracking
+- Handling complex asynchronous states (recording, playback, API responses)
+- Building responsive, mobile-first UI for real-world usage
+- Integrating browser APIs (MediaRecorder) for audio interaction
+- Creating intuitive UX for AI-powered features
 
 ## Setup
 
@@ -107,3 +147,43 @@ Open `http://localhost:3000` in your browser.
 - This is not a phoneme-level lab-grade scoring system.
 - Browser support depends on `MediaRecorder` and microphone permissions.
 - Streak/level stats are stored in browser `localStorage`.
+
+## Challenges & Decisions
+
+- Designed a fallback mechanism for unreliable audio analysis by switching from direct audio processing to transcription-based evaluation
+- Managed complex asynchronous UI states for recording, playback, and feedback
+- Simplified user interaction for complex AI features through focused UX design
+
+## Key Features
+
+### 🎤 Speaking Practice
+
+- Record voice and receive pronunciation feedback
+- AI-generated scoring and suggestions
+
+### 🔊 Listening Support
+
+- Natural TTS playback
+- Partial playback for selected text
+
+### 📈 Learning Motivation
+
+- Streak tracking
+- Level progression
+- Score-based feedback
+
+### 📝 Text Feedback
+
+- Grammar explanations for selected text
+- Rewrite suggestions
+
+## Future Improvements
+
+- Multi-language support for feedback (currently English only)
+- AI-generated example sentences based on user-selected difficulty levels
+- More detailed pronunciation feedback (phoneme-level analysis)
+- User accounts for cross-device progress tracking
+
+## Takeaways
+
+This project strengthened my ability to design user-focused interfaces and handle real-world complexity in frontend applications involving AI and media interactions.
