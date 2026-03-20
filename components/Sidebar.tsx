@@ -1,24 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
-  faChartLine,
-  faClockRotateLeft,
-  faGear,
-  faMicrophoneLines,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-
-const navItems = [
-  { href: "/practice", label: "Practice", icon: faMicrophoneLines },
-  { href: "/history", label: "History", icon: faClockRotateLeft },
-  { href: "/progress", label: "Progress", icon: faChartLine },
-  { href: "/settings", label: "Settings", icon: faGear },
-];
+import SidebarNav from "@/components/sidebar/SidebarNav";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -43,26 +32,11 @@ export default function Sidebar() {
             <FontAwesomeIcon icon={faBars} className="h-4 w-4" />
           </button>
         </div>
-        <nav className="mt-4 hidden md:flex md:flex-col md:gap-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`rounded-md px-3 py-2 text-sm font-medium md:w-full ${
-                  isActive ? "ui-btn-primary" : "ui-btn-secondary"
-                }`}
-              >
-                <span className="inline-flex items-center gap-2">
-                  <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
+        <SidebarNav
+          pathname={pathname}
+          className="mt-4 hidden md:flex md:flex-col md:gap-2"
+          itemClassName="md:w-full"
+        />
       </aside>
 
       <div
@@ -90,26 +64,7 @@ export default function Sidebar() {
             <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
           </button>
         </div>
-        <nav className="flex flex-col gap-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive ? "ui-btn-primary" : "ui-btn-secondary"
-                }`}
-              >
-                <span className="inline-flex items-center gap-2">
-                  <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
+        <SidebarNav pathname={pathname} className="flex flex-col gap-2" />
       </aside>
     </>
   );
