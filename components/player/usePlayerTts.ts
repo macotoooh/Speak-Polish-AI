@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  faPause,
+  faPlay,
+  faVolumeHigh,
+} from "@fortawesome/free-solid-svg-icons";
 
 const CACHE_LIMIT = 20;
 const DEFAULT_BROWSER_LANGUAGE = "en-US";
@@ -16,13 +21,18 @@ type UsePlayerTtsParams = {
   selectedText?: string;
 };
 
+type PlaybackState = "idle" | "loading" | "playing" | "paused";
+type PlaybackEngine = "audio" | "browser" | null;
+
 export default function usePlayerTts({
   text,
   selectedText = "",
 }: UsePlayerTtsParams) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [playbackState, setPlaybackState] = useState<PlaybackState>("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<string, string>>(new Map());
+  const playbackEngineRef = useRef<PlaybackEngine>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     const cachedAudio = audioCacheRef.current;
@@ -33,6 +43,8 @@ export default function usePlayerTts({
         audioRef.current = null;
       }
 
+      utteranceRef.current = null;
+
       for (const url of cachedAudio.values()) {
         URL.revokeObjectURL(url);
       }
@@ -41,6 +53,17 @@ export default function usePlayerTts({
       speechSynthesis.cancel();
     };
   }, []);
+
+  const resetPlayback = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    utteranceRef.current = null;
+    playbackEngineRef.current = null;
+    setPlaybackState("idle");
+  };
 
   const getSpeechText = () => {
     const trimmedSelectedText = selectedText.trim();
@@ -53,9 +76,9 @@ export default function usePlayerTts({
       return null;
     }
 
-    const matchedByName = PREFERRED_VOICE_NAMES
-      .map((name) => voices.find((voice) => voice.name === name))
-      .find((voice) => Boolean(voice));
+    const matchedByName = PREFERRED_VOICE_NAMES.map((name) =>
+      voices.find((voice) => voice.name === name),
+    ).find((voice) => Boolean(voice));
 
     if (matchedByName) {
       return matchedByName;
@@ -75,8 +98,22 @@ export default function usePlayerTts({
 
     const audio = new Audio(objectUrl);
     audioRef.current = audio;
+    playbackEngineRef.current = "audio";
+    audio.onplay = () => {
+      setPlaybackState("playing");
+    };
+    audio.onpause = () => {
+      if (audio.ended) {
+        return;
+      }
+
+      setPlaybackState("paused");
+    };
     audio.onended = () => {
-      audioRef.current = null;
+      resetPlayback();
+    };
+    audio.onerror = () => {
+      resetPlayback();
     };
     await audio.play();
   };
@@ -90,6 +127,8 @@ export default function usePlayerTts({
     speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(speechText);
+    utteranceRef.current = utterance;
+    playbackEngineRef.current = "browser";
     const preferredVoice = getPreferredVoice();
     if (preferredVoice) {
       utterance.voice = preferredVoice;
@@ -101,6 +140,21 @@ export default function usePlayerTts({
     utterance.rate = 0.95;
     utterance.pitch = 1;
     utterance.volume = 1;
+    utterance.onstart = () => {
+      setPlaybackState("playing");
+    };
+    utterance.onpause = () => {
+      setPlaybackState("paused");
+    };
+    utterance.onresume = () => {
+      setPlaybackState("playing");
+    };
+    utterance.onend = () => {
+      resetPlayback();
+    };
+    utterance.onerror = () => {
+      resetPlayback();
+    };
     speechSynthesis.speak(utterance);
   };
 
@@ -137,7 +191,7 @@ export default function usePlayerTts({
       return;
     }
 
-    setIsLoading(true);
+    setPlaybackState("loading");
 
     try {
       const response = await fetch("/api/tts", {
@@ -161,13 +215,84 @@ export default function usePlayerTts({
     } catch {
       speakWithBrowserVoice(speechText);
     } finally {
-      setIsLoading(false);
+      setPlaybackState((currentState) =>
+        currentState === "loading" ? "idle" : currentState,
+      );
     }
   };
 
+  const pause = () => {
+    if (playbackEngineRef.current === "audio" && audioRef.current) {
+      audioRef.current.pause();
+      return;
+    }
+
+    if (playbackEngineRef.current === "browser" && speechSynthesis.speaking) {
+      speechSynthesis.pause();
+    }
+  };
+
+  const resume = async () => {
+    if (playbackEngineRef.current === "audio" && audioRef.current) {
+      await audioRef.current.play();
+      return;
+    }
+
+    if (playbackEngineRef.current === "browser" && speechSynthesis.paused) {
+      speechSynthesis.resume();
+    }
+  };
+
+  const togglePlayback = async () => {
+    if (playbackState === "loading") {
+      return;
+    }
+
+    if (playbackState === "playing") {
+      pause();
+      return;
+    }
+
+    if (playbackState === "paused") {
+      await resume();
+      return;
+    }
+
+    await speak();
+  };
+
+  const getLabel = () => {
+    if (playbackState === "loading") {
+      return "Generating...";
+    }
+
+    if (playbackState === "playing") {
+      return "Pause";
+    }
+
+    if (playbackState === "paused") {
+      return "Resume";
+    }
+
+    return selectedText.trim().length > 0 ? "Listen Selection" : "Listen";
+  };
+
+  const getIcon = () => {
+    if (playbackState === "playing") {
+      return faPause;
+    }
+
+    if (playbackState === "paused") {
+      return faPlay;
+    }
+
+    return faVolumeHigh;
+  };
+
   return {
-    hasSelectedText: selectedText.trim().length > 0,
-    isLoading,
-    speak,
+    label: getLabel(),
+    icon: getIcon(),
+    isLoading: playbackState === "loading",
+    togglePlayback,
   };
 }

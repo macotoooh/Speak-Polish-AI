@@ -3,7 +3,6 @@
 import Button, { BUTTON_SIZES, BUTTON_VARIANTS } from "@/components/ui/Button";
 import usePlayerTts from "@/components/player/usePlayerTts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faVolumeHigh } from "@fortawesome/free-solid-svg-icons";
 
 type PlayerProps = {
   text: string;
@@ -11,7 +10,7 @@ type PlayerProps = {
 };
 
 export default function Player({ text, selectedText = "" }: PlayerProps) {
-  const { hasSelectedText, isLoading, speak } = usePlayerTts({
+  const { label, icon, isLoading, togglePlayback } = usePlayerTts({
     text,
     selectedText,
   });
@@ -21,7 +20,7 @@ export default function Player({ text, selectedText = "" }: PlayerProps) {
       onMouseDown={(event) => {
         event.preventDefault();
       }}
-      onClick={() => void speak()}
+      onClick={() => void togglePlayback()}
       disabled={isLoading}
       variant={BUTTON_VARIANTS.primary}
       size={BUTTON_SIZES.lg}
@@ -32,8 +31,8 @@ export default function Player({ text, selectedText = "" }: PlayerProps) {
         "Generating..."
       ) : (
         <>
-          <FontAwesomeIcon icon={faVolumeHigh} className="h-4 w-4" />
-          <span>{hasSelectedText ? "Listen Selection" : "Listen"}</span>
+          <FontAwesomeIcon icon={icon} className="h-4 w-4" />
+          <span>{label}</span>
         </>
       )}
     </Button>
