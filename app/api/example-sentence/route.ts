@@ -3,6 +3,11 @@ import {
   normalizeExampleSentenceLevel,
   type ExampleSentenceLevel,
 } from "@/lib/example-sentence-level";
+import {
+  getWeaknessPrompt,
+  isWeaknessTag,
+  type WeaknessTag,
+} from "@/lib/weakness-tags";
 
 type ChatCompletionsResponse = {
   choices?: Array<{
@@ -14,6 +19,7 @@ type ChatCompletionsResponse = {
 
 type ExampleSentenceRequest = {
   level?: string;
+  focusWeakness?: string;
 };
 
 function buildPrompt(level: ExampleSentenceLevel) {
@@ -60,7 +66,13 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ExampleSentenceRequest;
     const level = normalizeExampleSentenceLevel(body.level);
+    const focusWeakness = isWeaknessTag(body.focusWeakness ?? "")
+      ? (body.focusWeakness as WeaknessTag)
+      : null;
     const { profile, words } = buildPrompt(level);
+    const weaknessPrompt = focusWeakness
+      ? getWeaknessPrompt(focusWeakness)
+      : "Make it broadly useful for general pronunciation practice.";
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -85,6 +97,7 @@ Generate one English sentence for speaking practice.
 Difficulty: ${level}
 Target profile: ${profile}
 Length: ${words}
+Pronunciation focus: ${weaknessPrompt}
 
 Rules:
 - Return exactly one sentence in natural English.

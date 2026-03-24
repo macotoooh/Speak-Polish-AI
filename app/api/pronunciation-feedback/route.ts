@@ -4,6 +4,7 @@ import {
   normalizeFeedbackLanguage,
   type FeedbackLanguage,
 } from "@/lib/feedback-language";
+import { normalizeWeaknessTags } from "@/lib/weakness-tags";
 import type { PronunciationFeedback } from "@/types/pronunciation";
 
 type ChatCompletionsResponse = {
@@ -46,6 +47,7 @@ const fallbackFeedback: PronunciationFeedback = {
   stressComment: "No analysis.",
   pronunciationIssues: [],
   practiceTips: [],
+  weaknessTags: [],
   targetText: "",
   transcribedText: "",
   analysisMode: "audio_transcription_timing",
@@ -153,6 +155,7 @@ function normalizeFeedback(
   const tips = Array.isArray(input.practiceTips)
     ? input.practiceTips.filter((tip) => typeof tip === "string").slice(0, 5)
     : [];
+  const weaknessTags = normalizeWeaknessTags(input.weaknessTags);
 
   return {
     overallScore: score,
@@ -184,6 +187,7 @@ function normalizeFeedback(
         : fallbackCopy.stressComment,
     pronunciationIssues: issues,
     practiceTips: tips,
+    weaknessTags,
     targetText,
     transcribedText,
     analysisMode: "audio_transcription_timing",
@@ -309,7 +313,8 @@ Return strict JSON with this schema:
   "pronunciationIssues": [
     { "expected": string, "heard": string, "advice": string } // advice in ${feedbackLanguageLabel}
   ],
-  "practiceTips": string[] // in ${feedbackLanguageLabel}
+  "practiceTips": string[], // in ${feedbackLanguageLabel}
+  "weaknessTags": string[] // choose only from: th, r_l, v_b, stress, rhythm, ending_consonants
 }
 Rules for wording:
 - Write summary, comments, advice, and practice tips in ${feedbackLanguageLabel}.
@@ -402,7 +407,8 @@ Return strict JSON with this schema:
   "pronunciationIssues": [
     { "expected": string, "heard": string, "advice": string } // advice in ${feedbackLanguageLabel}
   ],
-  "practiceTips": string[] // in ${feedbackLanguageLabel}
+  "practiceTips": string[], // in ${feedbackLanguageLabel}
+  "weaknessTags": string[] // choose only from: th, r_l, v_b, stress, rhythm, ending_consonants
 }
 Rules for wording:
 - Write summary, comments, advice, and practice tips in ${feedbackLanguageLabel}.

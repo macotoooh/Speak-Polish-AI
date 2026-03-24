@@ -1,3 +1,5 @@
+import type { WeaknessTag } from "@/lib/weakness-tags";
+
 export type PronunciationIssue = {
   expected: string;
   heard: string;
@@ -19,6 +21,7 @@ export type PronunciationFeedback = {
   stressComment: string;
   pronunciationIssues: PronunciationIssue[];
   practiceTips: string[];
+  weaknessTags: WeaknessTag[];
   targetText: string;
   transcribedText: string;
   analysisMode: "audio_transcription_timing";

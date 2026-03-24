@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CELEBRATION_VISIBLE_MS,
@@ -34,6 +34,11 @@ import {
   readPracticeHistory,
   savePracticeHistory,
 } from "@/lib/practice-history";
+import {
+  getPrimaryWeaknessTag,
+  getWeaknessTagLabel,
+  type WeaknessTag,
+} from "@/lib/weakness-tags";
 import type { PronunciationFeedback } from "@/types/pronunciation";
 import type { PracticeRecord } from "@/types/PracticeRecord";
 import type { TextFeedbackResponse } from "@/types/text-feedback";
@@ -84,6 +89,16 @@ export default function usePracticePage({
   );
   const [showNinetyCelebration, setShowNinetyCelebration] = useState(false);
   const [reviewSentence, setReviewSentence] = useState<string | null>(null);
+  const [recommendedSentence, setRecommendedSentence] = useState<string | null>(
+    null,
+  );
+  const [recommendedWeakness, setRecommendedWeakness] =
+    useState<WeaknessTag | null>(null);
+  const [isGeneratingRecommendedSentence, setIsGeneratingRecommendedSentence] =
+    useState(false);
+  const [recommendedSentenceError, setRecommendedSentenceError] = useState<
+    string | null
+  >(null);
   const isSavingRef = useRef(false);
   const appliedReviewIdRef = useRef<string | null>(null);
 
@@ -93,6 +108,73 @@ export default function usePracticePage({
     setLastSavedFingerprint(readLatestPracticeFingerprint());
     setFeedbackLanguage(readFeedbackLanguage());
   }, []);
+
+  const fetchExampleSentence = useCallback(
+    async (focusWeakness?: WeaknessTag | null) => {
+      const response = await fetch("/api/example-sentence", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          level: difficultyLevel,
+          focusWeakness: focusWeakness ?? undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          await getApiErrorMessage(response, "Failed to generate sentence."),
+        );
+      }
+
+      const result = (await response.json()) as { sentence?: string };
+      const nextSentence = String(result.sentence ?? "").trim();
+
+      if (!nextSentence) {
+        throw new Error("Generated sentence was empty.");
+      }
+
+      return nextSentence;
+    },
+    [difficultyLevel],
+  );
+
+  const loadRecommendedSentence = useCallback(
+    async (history: PracticeRecord[]) => {
+      const topWeakness = getPrimaryWeaknessTag(history);
+      setRecommendedWeakness(topWeakness);
+      setRecommendedSentenceError(null);
+
+      if (!topWeakness) {
+        setRecommendedSentence(null);
+        return;
+      }
+
+      setIsGeneratingRecommendedSentence(true);
+
+      try {
+        const nextSentence = await fetchExampleSentence(topWeakness);
+        setRecommendedSentence(nextSentence);
+      } catch (error) {
+        setRecommendedSentence(null);
+        setRecommendedSentenceError(
+          getUnknownErrorMessage(
+            error,
+            "Failed to generate a recommended sentence.",
+          ),
+        );
+      } finally {
+        setIsGeneratingRecommendedSentence(false);
+      }
+    },
+    [fetchExampleSentence],
+  );
+
+  useEffect(() => {
+    const history = readPracticeHistory();
+    void loadRecommendedSentence(history);
+  }, [loadRecommendedSentence]);
 
   useEffect(() => {
     if (!showNinetyCelebration) {
@@ -212,29 +294,7 @@ export default function usePracticePage({
     setSentenceGenerationError(null);
 
     try {
-      const response = await fetch("/api/example-sentence", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          level: difficultyLevel,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          await getApiErrorMessage(response, "Failed to generate sentence."),
-        );
-      }
-
-      const result = (await response.json()) as { sentence?: string };
-      const nextSentence = String(result.sentence ?? "").trim();
-
-      if (!nextSentence) {
-        throw new Error("Generated sentence was empty.");
-      }
-
+      const nextSentence = await fetchExampleSentence();
       setText(nextSentence);
       resetTextFeedbackState();
       resetPronunciationState();
@@ -246,6 +306,25 @@ export default function usePracticePage({
     } finally {
       setIsGeneratingSentence(false);
     }
+  };
+
+  const useRecommendedSentence = () => {
+    if (!recommendedSentence) {
+      return;
+    }
+
+    setReviewSentence(null);
+    appliedReviewIdRef.current = null;
+    router.replace(pathname, { scroll: false });
+    setText(recommendedSentence);
+    resetTextFeedbackState();
+    resetPronunciationState();
+    clearSaveMessage();
+  };
+
+  const refreshRecommendedSentence = async () => {
+    const history = readPracticeHistory();
+    await loadRecommendedSentence(history);
   };
 
   const updateSelectionState = () => {
@@ -402,6 +481,7 @@ export default function usePracticePage({
         correction,
         pronunciationScore: aiFeedback.overallScore,
         createdAt: new Date().toISOString(),
+        weaknessTags: aiFeedback.weaknessTags,
       };
 
       const nextHistory = [newRecord, ...parsed];
@@ -409,6 +489,7 @@ export default function usePracticePage({
       setLearningStats(calculateLearningStats(nextHistory));
       setLastSavedFingerprint(currentFingerprint);
       setSaveMessage("Saved to history.");
+      void loadRecommendedSentence(nextHistory);
     } catch {
       setSaveMessage("Failed to save history.");
     } finally {
@@ -437,16 +518,25 @@ export default function usePracticePage({
   return {
     aiFeedback,
     applySuggestion,
+    analyzeSelectedText,
     difficultyLevel,
     feedbackError,
+    generateExampleSentence,
     handleRecordedAudio,
     handleTextChange,
     isAnalyzing,
     isGeneratingSentence,
+    isGeneratingRecommendedSentence,
     isSaveDisabled,
     isSaving,
     isTextAnalyzing,
     learningStats,
+    recommendedSentence,
+    recommendedSentenceError,
+    recommendedWeaknessLabel: recommendedWeakness
+      ? getWeaknessTagLabel(recommendedWeakness)
+      : null,
+    refreshRecommendedSentence,
     reviewSentence,
     saveMessage,
     saveToHistory,
@@ -461,8 +551,7 @@ export default function usePracticePage({
     textFeedbackError,
     textareaRef,
     updateSelectionState,
-    analyzeSelectedText,
     exitReviewMode,
-    generateExampleSentence,
+    useRecommendedSentence,
   };
 }
