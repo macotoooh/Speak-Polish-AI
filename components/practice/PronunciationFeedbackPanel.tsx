@@ -1,3 +1,4 @@
+import { getWeaknessTagLabel } from "@/lib/weakness-tags";
 import type { PronunciationFeedback } from "@/types/pronunciation";
 
 type PronunciationFeedbackPanelProps = {
@@ -48,6 +49,12 @@ export default function PronunciationFeedbackPanel({
             <strong>Evaluated sentence:</strong> {aiFeedback.targetText}
           </p>
           <p>{aiFeedback.summary}</p>
+          {aiFeedback.weaknessTags.length > 0 && (
+            <p className="ui-text-muted text-sm">
+              <strong>Detected focus:</strong>{" "}
+              {aiFeedback.weaknessTags.map(getWeaknessTagLabel).join(", ")}
+            </p>
+          )}
           <div className="space-y-1">
             <p>
               <strong>Consonants:</strong> {aiFeedback.consonantComment}

@@ -28,10 +28,15 @@ export default function PracticePage({ reviewId }: PracticePageProps) {
     handleTextChange,
     isAnalyzing,
     isGeneratingSentence,
+    isGeneratingRecommendedSentence,
     isSaveDisabled,
     isSaving,
     isTextAnalyzing,
     learningStats,
+    recommendedSentence,
+    recommendedSentenceError,
+    recommendedWeaknessLabel,
+    refreshRecommendedSentence,
     reviewSentence,
     saveMessage,
     saveToHistory,
@@ -46,6 +51,7 @@ export default function PracticePage({ reviewId }: PracticePageProps) {
     textFeedbackError,
     textareaRef,
     updateSelectionState,
+    useRecommendedSentence,
     exitReviewMode,
   } = usePracticePage({ reviewId });
 
@@ -70,8 +76,14 @@ export default function PracticePage({ reviewId }: PracticePageProps) {
         selectionRange={selectionRange}
         isTextAnalyzing={isTextAnalyzing}
         textareaRef={textareaRef}
+        recommendedSentence={recommendedSentence}
+        recommendedWeaknessLabel={recommendedWeaknessLabel}
+        isGeneratingRecommendedSentence={isGeneratingRecommendedSentence}
+        recommendedSentenceError={recommendedSentenceError}
         onDifficultyChange={setDifficultyLevel}
         onGenerateSentence={() => void generateExampleSentence()}
+        onUseRecommendedSentence={useRecommendedSentence}
+        onRefreshRecommendedSentence={() => void refreshRecommendedSentence()}
         onTextChange={handleTextChange}
         onTextSelect={updateSelectionState}
         onAnalyzeText={() => void analyzeSelectedText()}
